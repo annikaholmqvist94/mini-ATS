@@ -22,7 +22,7 @@ Ett mini-ATS (Applicant Tracking System) byggt med Java Spring Boot och Supabase
 
 ### 1. Förutsättningar
 ```bash
-- Java 21+
+- Java 17+
 - Maven 3.8+
 - Supabase-konto
 - Git
@@ -124,12 +124,14 @@ Applikationen startar på: `http://localhost:8080/api`
 - [x] Seed data
 - [x] Domain models (immutable med Builder)
 - [x] Enums (UserRole, JobStatus, ApplicationStatus)
-- [ ] DTOs (nästa steg)
-- [ ] Repository interfaces
-- [ ] Supabase repository implementations
-- [ ] Service layer
-- [ ] REST Controllers
-- [ ] Admin impersonation
+- [x] DTOs (immutable records)
+- [x] Repository interfaces (Adapter pattern)
+- [x] Supabase repository implementations
+- [x] Service layer (med business logic)
+- [x] Exception handling
+- [x] Security config (CORS, basic)
+- [ ] REST Controllers (nästa steg)
+- [ ] Admin impersonation endpoints
 - [ ] Frontend integration
 
 ## 📁 Projektstruktur
