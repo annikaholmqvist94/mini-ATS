@@ -14,7 +14,7 @@ import java.util.Map;
 
 /**
  * Health check controller for monitoring application status.
- * Base path: /api/health
+ * Base path: /health
  */
 @RestController
 @RequestMapping("/health")

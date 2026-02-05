@@ -11,6 +11,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,44 +24,61 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSecurity
+@org.springframework.core.annotation.Order(1)
 public class SecurityConfig {
 
     @Value("${cors.allowed-origins}")
     private String allowedOrigins;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(auth -> auth
-                        // Allow all requests in development mode
-                        .anyRequest().permitAll()
-                );
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http
+//                .csrf(csrf -> csrf.disable()) // Inaktivera CSRF för API-testning
+//                .cors(org.springframework.security.config.Customizer.withDefaults())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/candidates/**", "/jobs/**", "/organizations/**", "/users/**", "/health/**", "/applications/**").permitAll() // Tillåt alla anrop till API:et
+//                        .anyRequest().authenticated()
+//                );
+//        return http.build();
+//    }
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            // 1. Inaktivera standardinloggning och HTTP Basic helt
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable())
 
-        return http.build();
-    }
+            // 2. Inaktivera CSRF (viktigt för API:er)
+            .csrf(csrf -> csrf.disable())
+
+            // 3. Aktivera CORS
+            .cors(org.springframework.security.config.Customizer.withDefaults())
+
+            // 4. Tillåt ALLT under utveckling för att verifiera anslutningen
+            .authorizeHttpRequests(auth -> auth
+                    .anyRequest().permitAll()
+            )
+
+            // 5. Gör sessioner statslösa (bra för API:er)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+    return http.build();
+}
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Parse allowed origins from comma-separated string
-        List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
+        // Detta tillåter alla domäner att prata med din backend under utveckling
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8081", "http://localhost:5173"));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 }

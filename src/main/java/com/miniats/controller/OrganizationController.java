@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * REST Controller for Organization management.
- * Base path: /api/organizations
+ * Base path: /organizations
  */
 @RestController
 @RequestMapping("/organizations")

@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * REST Controller for User management.
- * Base path: /api/users
+ * Base path: /users
  */
 @RestController
 @RequestMapping("/users")

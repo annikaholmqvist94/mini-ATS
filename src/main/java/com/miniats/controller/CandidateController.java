@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * REST Controller for Candidate management.
- * Base path: /api/candidates
+ * Base path: /candidates
  */
 @RestController
 @RequestMapping("/candidates")

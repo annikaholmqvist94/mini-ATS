@@ -12,7 +12,7 @@ import java.util.UUID;
 
 /**
  * REST Controller for Application management and Kanban board.
- * Base path: /api/applications
+ * Base path: /applications
  */
 @RestController
 @RequestMapping("/applications")

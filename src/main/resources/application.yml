@@ -49,7 +49,7 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000}
 
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000, http://localhost:8081, https://lovable.dev/projects/73cc2a8b-dd7b-45ba-851e-1a4f7624ea77, http://localhost:5173, https://73cc2a8b-dd7b-45ba-851e-1a4f7624ea77.lovableproject.com, https://lovable.dev}
 
 admin:
   default-email: ${ADMIN_DEFAULT_EMAIL:admin@acme.com}
