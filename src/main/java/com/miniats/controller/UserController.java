@@ -15,7 +15,7 @@ import java.util.UUID;
  * Base path: /api/users
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController extends BaseController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);

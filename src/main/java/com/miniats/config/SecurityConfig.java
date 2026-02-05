@@ -17,7 +17,9 @@ import java.util.List;
 /**
  * Security configuration for Mini-ATS.
  * Currently configured for development with permissive access.
- * TODO: Add JWT authentication and authorization
+ *
+ * DEVELOPMENT MODE: All endpoints are accessible without authentication.
+ * TODO: Add JWT authentication and authorization for production.
  */
 @Configuration
 @EnableWebSecurity
@@ -35,9 +37,8 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .anyRequest().authenticated()
+                        // Allow all requests in development mode
+                        .anyRequest().permitAll()
                 );
 
         return http.build();

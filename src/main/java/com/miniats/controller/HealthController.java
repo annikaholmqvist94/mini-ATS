@@ -17,7 +17,7 @@ import java.util.Map;
  * Base path: /api/health
  */
 @RestController
-@RequestMapping("/api/health")
+@RequestMapping("/health")
 public class HealthController extends BaseController {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthController.class);
