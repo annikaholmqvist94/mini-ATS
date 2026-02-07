@@ -1,6 +1,7 @@
 package com.miniats.domain.model;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -16,8 +17,16 @@ public final class Candidate {
     private final String linkedinUrl;
     private final String resumeUrl;
     private final String notes;
+    private final String city;
+    private final String availability; // available, unavailable, notice_period
+    private final String educationLevel; // high_school, bachelor, master, phd, other
+    private final Boolean isExperienced;
+    private final List<String> skills;
+    private final String avatarUrl;
+    private final String summary;
     private final Instant createdAt;
     private final Instant updatedAt;
+
 
     private Candidate(Builder builder) {
         this.id = builder.id;
@@ -28,8 +37,16 @@ public final class Candidate {
         this.linkedinUrl = builder.linkedinUrl;
         this.resumeUrl = builder.resumeUrl;
         this.notes = builder.notes;
+        this.city = builder.city;
+        this.availability = builder.availability;
+        this.educationLevel = builder.educationLevel;
+        this.isExperienced = builder.isExperienced;
+        this.skills = builder.skills != null ? List.copyOf(builder.skills) : List.of();
+        this.avatarUrl = builder.avatarUrl;
+        this.summary = builder.summary;
         this.createdAt = builder.createdAt;
         this.updatedAt = builder.updatedAt;
+
     }
 
     public UUID getId() {
@@ -64,6 +81,33 @@ public final class Candidate {
         return notes;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public String getAvailability() {
+        return availability;
+    }
+    public String getEducationLevel() {
+        return educationLevel;
+    }
+
+    public Boolean getIsExperienced() {
+        return isExperienced;
+    }
+
+    public List<String> getSkills() {
+        return skills;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -71,6 +115,7 @@ public final class Candidate {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
+
 
     public static Builder builder() {
         return new Builder();
@@ -86,8 +131,16 @@ public final class Candidate {
                 .linkedinUrl(this.linkedinUrl)
                 .resumeUrl(this.resumeUrl)
                 .notes(this.notes)
+                .city(this.city)
+                .availability(this.availability)
+                .educationLevel(this.educationLevel)
+                .isExperienced(this.isExperienced)
+                .skills(this.skills)
+                .avatarUrl(this.avatarUrl)
+                .summary(this.summary)
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt);
+
     }
 
     public static final class Builder {
@@ -99,8 +152,16 @@ public final class Candidate {
         private String linkedinUrl;
         private String resumeUrl;
         private String notes;
+        private String city;
+        private String availability;
+        private String educationLevel;
+        private Boolean isExperienced;
+        private List<String> skills;
+        private String avatarUrl;
+        private String summary;
         private Instant createdAt;
         private Instant updatedAt;
+
 
         private Builder() {
         }
@@ -144,6 +205,13 @@ public final class Candidate {
             this.notes = notes;
             return this;
         }
+        public Builder city(String city) { this.city = city; return this; }
+        public Builder availability(String availability) { this.availability = availability; return this; }
+        public Builder educationLevel(String educationLevel) { this.educationLevel = educationLevel; return this; }
+        public Builder isExperienced(Boolean isExperienced) { this.isExperienced = isExperienced; return this; }
+        public Builder skills(List<String> skills) { this.skills = skills; return this; }
+        public Builder avatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; return this; }
+        public Builder summary(String summary) { this.summary = summary; return this; }
 
         public Builder createdAt(Instant createdAt) {
             this.createdAt = createdAt;
@@ -154,6 +222,8 @@ public final class Candidate {
             this.updatedAt = updatedAt;
             return this;
         }
+
+
 
         public Candidate build() {
             if (fullName == null || fullName.trim().isEmpty()) {
