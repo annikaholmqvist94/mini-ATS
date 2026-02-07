@@ -3,6 +3,7 @@ package com.miniats.dto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.miniats.domain.model.Candidate;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -19,6 +20,13 @@ public record CandidateDTO(
         String linkedinUrl,
         String resumeUrl,
         String notes,
+        String city,
+        String availability,
+        String educationLevel,
+        Boolean isExperienced,
+        List<String> skills,
+        String avatarUrl,
+        String summary,
         Instant createdAt,
         Instant updatedAt
 ) {
@@ -39,6 +47,13 @@ public record CandidateDTO(
                 candidate.getLinkedinUrl(),
                 candidate.getResumeUrl(),
                 candidate.getNotes(),
+                candidate.getCity(),
+                candidate.getAvailability(),
+                candidate.getEducationLevel(),
+                candidate.getIsExperienced(),
+                candidate.getSkills(),
+                candidate.getAvatarUrl(),
+                candidate.getSummary(),
                 candidate.getCreatedAt(),
                 candidate.getUpdatedAt()
         );
@@ -57,6 +72,13 @@ public record CandidateDTO(
                 .linkedinUrl(this.linkedinUrl)
                 .resumeUrl(this.resumeUrl)
                 .notes(this.notes)
+                .city(this.city)
+                .availability(this.availability)
+                .educationLevel(this.educationLevel)
+                .isExperienced(this.isExperienced)
+                .skills(this.skills)
+                .avatarUrl(this.avatarUrl)
+                .summary(this.summary)
                 .createdAt(this.createdAt)
                 .updatedAt(this.updatedAt)
                 .build();
@@ -71,7 +93,14 @@ public record CandidateDTO(
             String email,
             String phone,
             String linkedinUrl,
-            String notes
+            String notes,
+            String city,
+            String availability,
+            String educationLevel,
+            Boolean isExperienced,
+            List<String> skills,
+            String avatarUrl,
+            String summary
     ) {
         return new CandidateDTO(
                 null,
@@ -82,6 +111,13 @@ public record CandidateDTO(
                 linkedinUrl,
                 null, // resumeUrl handled separately via file upload
                 notes,
+                city,
+                availability,
+                educationLevel,
+                isExperienced,
+                skills,
+                avatarUrl,
+                summary,
                 null,
                 null
         );
@@ -98,7 +134,14 @@ public record CandidateDTO(
             String phone,
             String linkedinUrl,
             String resumeUrl,
-            String notes
+            String notes,
+            String city,
+            String availability,
+            String educationLevel,
+            Boolean isExperienced,
+            List<String> skills,
+            String avatarUrl,
+            String summary
     ) {
         return new CandidateDTO(
                 id,
@@ -109,6 +152,13 @@ public record CandidateDTO(
                 linkedinUrl,
                 resumeUrl,
                 notes,
+                city,
+                availability,
+                educationLevel,
+                isExperienced,
+                skills,
+                avatarUrl,
+                summary,
                 null,
                 null
         );
