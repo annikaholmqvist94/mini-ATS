@@ -1,176 +1,296 @@
-# Mini-ATS - Applicant Tracking System
+# Mini-ATS - Applicant Tracking System Backend
 
-## 📋 Översikt
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-blue.svg)](https://supabase.com/)
 
-Ett mini-ATS (Applicant Tracking System) byggt med Java Spring Boot och Supabase som backend. Systemet stöder multi-tenant arkitektur där olika organisationer kan hantera sina rekryteringsprocesser isolerat.
+> A modern, multi-tenant Applicant Tracking System built with Spring Boot and Supabase. Features a Kanban-style pipeline for managing recruitment workflows.
 
-## 🏗️ Arkitektur
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [API Documentation](#api-documentation)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+
+---
+
+## 🎯 Overview
+
+Mini-ATS is a recruitment management platform for organizations to track job candidates through a visual Kanban pipeline. The system supports multi-tenancy with complete data isolation and role-based access control.
+
+### Key Capabilities
+
+- **Multi-tenant Architecture**: Organization-level data isolation
+- **Kanban Pipeline**: Visual tracking (NEW → SCREENING → INTERVIEW → OFFER / REJECTED)
+- **Admin Features**: Create organizations, manage users across tenants
+- **RESTful API**: 63 endpoints for full CRUD operations
+- **Supabase Integration**: PostgreSQL with Row Level Security
+
+---
+
+## ✨ Features
+
+### User Management
+✅ Admin and User roles  
+✅ Organization-based access control  
+✅ Admin can manage multiple organizations
+
+### Job Management
+✅ Create and manage job postings  
+✅ Filter by status (ACTIVE/CLOSED/DRAFT)  
+✅ Search by title and department
+
+### Candidate Management
+✅ Add candidates with LinkedIn profiles  
+✅ Store contact information and notes  
+✅ Search and filter capabilities
+
+### Kanban Pipeline
+✅ Visual tracking across 5 stages  
+✅ Drag-and-drop status updates  
+✅ Enriched data (candidate + job info)  
+✅ Filter by job or candidate name  
+✅ Pipeline statistics and metrics
+
+---
+
+## 🏗️ Architecture
 
 ### Design Patterns
-- **Builder Pattern**: Alla domain entities använder immutable builders
-- **Adapter Pattern**: Repository-lager separerar affärslogik från datakälla
-- **DTO Pattern**: Immutable Data Transfer Objects för API-kommunikation
-- **Dependency Injection**: Spring Boot IoC för loose coupling
 
-### Teknisk Stack
-- **Backend**: Java 17, Spring Boot 3.2.x
-- **Database**: PostgreSQL via Supabase
-- **Auth**: Supabase Authentication + JWT
-- **Build Tool**: Maven
+- **Builder Pattern**: Immutable domain entities
+- **Adapter Pattern**: Repository layer abstractions
+- **DTO Pattern**: Immutable records for API
 
-## 🚀 Setup
+### Layers
 
-### 1. Förutsättningar
-```bash
-- Java 17+
-- Maven 3.8+
-- Supabase-konto
-- Git
+```
+┌─────────────────────────┐
+│  REST Controllers (63)  │
+├─────────────────────────┤
+│    Service Layer (5)    │
+├─────────────────────────┤
+│   Repository Layer (5)  │
+├─────────────────────────┤
+│  Supabase REST Client   │
+└─────────────────────────┘
 ```
 
-### 2. Klona & Konfigurera
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: Spring Boot 3.2.2
+- **Language**: Java 17
+- **Build**: Maven 3.8+
+- **Database**: PostgreSQL (Supabase)
+- **Data Access**: Supabase REST API
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
 
 ```bash
-# Klona projektet
+java -version    # Java 17+
+mvn -version     # Maven 3.8+
+```
+
+### Quick Start
+
+1. **Clone repository**
+```bash
 git clone <repo-url>
 cd mini-ats
-
-# Kopiera och fyll i .env-filen
-cp .env .env.local
 ```
 
-### 3. Hämta Supabase-credentials
-
-Gå till din Supabase-dashboard:
-1. **Project Settings** → **API**
-2. Kopiera:
-    - `Project URL` → `SUPABASE_URL`
-    - `anon/public key` → `SUPABASE_ANON_KEY`
-    - `service_role key` → `SUPABASE_SERVICE_ROLE_KEY`
-
-3. **Project Settings** → **Database**
-4. Kopiera:
-    - Connection string → `DB_URL`
-    - Password → `DB_PASSWORD`
-
-### 4. Uppdatera .env
-
-```env
+2. **Configure environment** (create `.env` file)
+```bash
 SUPABASE_URL=https://xxxxx.supabase.co
-SUPABASE_ANON_KEY=eyJhbGc...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...
-
+SUPABASE_ANON_KEY=your-key
+SUPABASE_SERVICE_ROLE_KEY=your-key
 DB_URL=jdbc:postgresql://db.xxxxx.supabase.co:5432/postgres
 DB_USERNAME=postgres
-DB_PASSWORD=din-databas-password
-
-JWT_SECRET=din-hemliga-nyckel-minst-256-bitar
+DB_PASSWORD=your-password
+CORS_ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-### 5. Bygg & Kör
-
+3. **Build and run**
 ```bash
-# Installera dependencies
 mvn clean install
-
-# Kör applikationen
 mvn spring-boot:run
 ```
 
-Applikationen startar på: `http://localhost:8080/api`
+API available at: `http://localhost:8080/api`
 
-## 📊 Databasschema
+### Verify
 
-### Entiteter
-
-#### Organizations
-- Root entity för multi-tenant
-- Isolerar data mellan kunder
-
-#### Users
-- Kan vara ADMIN eller USER
-- Kopplade till en Organization
-- Admins kan impersonate
-
-#### Jobs
-- Tillhör en Organization
-- Status: ACTIVE, CLOSED, DRAFT
-
-#### Candidates
-- Tillhör en Organization
-- Innehåller LinkedIn-länk, CV, etc.
-
-#### Applications
-- Kopplar Candidate till Job (many-to-many)
-- Kanban-status: NEW → SCREENING → INTERVIEW → OFFER / REJECTED
-
-## 🔒 Säkerhet
-
-### Row Level Security (RLS)
-- All data är isolerad per Organization
-- Policies kontrollerar åtkomst baserat på user's org
-- Admins har full åtkomst via service role key
-
-### Authentication Flow
-1. Frontend loggar in via Supabase Auth
-2. JWT token innehåller user email
-3. Backend verifierar token och hämtar user från DB
-4. RLS policies filtrerar data baserat på organization_id
-
-## 🎯 Core Features (Status)
-
-- [x] Databasschema i Supabase
-- [x] RLS policies
-- [x] Seed data
-- [x] Domain models (immutable med Builder)
-- [x] Enums (UserRole, JobStatus, ApplicationStatus)
-- [x] DTOs (immutable records)
-- [x] Repository interfaces (Adapter pattern)
-- [x] Supabase repository implementations
-- [x] Service layer (med business logic)
-- [x] Exception handling
-- [x] Security config (CORS, basic)
-- [ ] REST Controllers (nästa steg)
-- [ ] Admin impersonation endpoints
-- [ ] Frontend integration
-
-## 📁 Projektstruktur
-
-```
-src/main/java/com/miniats/
-├── domain/
-│   ├── model/          # Immutable entities med Builder
-│   └── enums/          # Status enumerations
-├── dto/                # Data Transfer Objects
-├── repository/         # Interface + Supabase implementations
-├── service/            # Business logic
-├── controller/         # REST endpoints
-├── config/             # Spring configuration
-└── exception/          # Error handling
+```bash
+curl http://localhost:8080/api/health
+# Expected: {"success":true,"data":"OK",...}
 ```
 
-## 🧪 Test Data
+---
 
-Admin user:
-- Email: `admin@acme.com`
-- Org: `Acme Corp`
+## 📚 API Documentation
 
-Test job:
-- Title: `Senior Java Developer`
+### Base URL
+```
+http://localhost:8080/api
+```
 
-Test kandidater:
-- Erik Svensson
-- Anna Andersson
+### Response Format
+```json
+{
+  "success": true,
+  "data": { ... },
+  "error": null,
+  "timestamp": "2026-02-05T..."
+}
+```
 
-## 📝 Nästa Steg
+### Endpoints Summary
 
-1. ✅ Skapa DTOs
-2. ✅ Implementera Repository layer
-3. ✅ Skapa Service layer
-4. ✅ REST API Controllers
-5. ⬜ Frontend i Lovable/React
-6. ⬜ Deployment
+| Resource | Count | Description |
+|----------|-------|-------------|
+| Organizations | 6 | CRUD operations |
+| Users | 10 | User management |
+| Jobs | 14 | Job postings |
+| Candidates | 9 | Candidate profiles |
+| Applications | 20 | Kanban pipeline |
+| Health | 4 | Monitoring |
 
-## 🤝 Kontakt
+**Total**: 63 REST endpoints
 
-Vid frågor eller problem, kontakta utvecklaren.
+### Key Endpoints
+
+```bash
+# Kanban board
+GET  /api/applications/organization/{orgId}
+POST /api/applications
+PATCH /api/applications/{id}/status
+
+# Jobs
+GET  /api/jobs/organization/{orgId}
+POST /api/jobs
+
+# Candidates
+GET  /api/candidates/organization/{orgId}
+POST /api/candidates
+```
+
+**Full documentation**: [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+
+---
+
+## 📁 Project Structure
+
+```
+mini-ats/
+├── src/main/java/com/miniats/
+│   ├── MiniAtsApplication.java
+│   ├── config/                  # Security, Supabase
+│   ├── controller/              # 6 REST controllers
+│   ├── service/                 # 5 business logic services
+│   ├── repository/              # Data access layer
+│   │   ├── (5 interfaces)
+│   │   └── impl/                # Supabase implementations
+│   ├── domain/
+│   │   ├── model/               # 5 immutable entities
+│   │   └── enums/               # 3 enums
+│   ├── dto/                     # 5 DTOs (records)
+│   └── exception/               # Error handling
+├── src/main/resources/
+│   └── application.yml
+├── .env                         # Environment config
+├── pom.xml                      # Maven dependencies
+└── README.md
+```
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+```bash
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-key
+
+# Database
+DB_URL=jdbc:postgresql://db.your-project.supabase.co:5432/postgres
+DB_USERNAME=postgres
+DB_PASSWORD=your-password
+
+# CORS (add frontend URLs)
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend.com
+
+# JWT (for future auth)
+JWT_SECRET=your-secret-key
+```
+
+---
+
+## 🚢 Deployment
+
+### Build
+
+```bash
+mvn clean package
+java -jar target/mini-ats-1.0.0.jar
+```
+
+### Platforms
+
+- **Railway**: One-click deploy
+- **Heroku**: `git push heroku main`
+- **AWS**: Upload JAR to Elastic Beanstalk
+
+### Checklist
+
+- [ ] Update CORS with production URL
+- [ ] Set production Supabase credentials
+- [ ] Configure strong JWT secret
+- [ ] Test all endpoints
+- [ ] Enable HTTPS only
+
+---
+
+## 🔒 Security
+
+**Current** (Development):
+- CORS enabled
+- No authentication (`.permitAll()`)
+- RLS in database
+
+**Production** (See [JWT_AUTH_GUIDE.md](JWT_AUTH_GUIDE.md)):
+- JWT authentication
+- Role-based access
+- Rate limiting
+
+---
+
+## 📖 Documentation
+
+- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Complete API reference
+- **[QUICK_START.md](QUICK_START.md)** - Setup guide
+- **[INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)** - Frontend integration
+- **[JWT_AUTH_GUIDE.md](JWT_AUTH_GUIDE.md)** - Authentication setup
+
+---
+
+## 📄 License
+
+MIT License
+
+---
+
+**Built with ❤️ using Spring Boot and Supabase**
