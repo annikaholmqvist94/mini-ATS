@@ -22,15 +22,18 @@ public class CandidateService {
     private final CandidateRepository candidateRepository;
     private final OrganizationService organizationService;
     private final UserService userService;
+    private final ActivityService activityService;
 
     public CandidateService(
             CandidateRepository candidateRepository,
             OrganizationService organizationService,
-            UserService userService
+            UserService userService,
+            ActivityService activityService
     ) {
         this.candidateRepository = candidateRepository;
         this.organizationService = organizationService;
         this.userService = userService;
+        this.activityService = activityService;
     }
 
     /**
@@ -144,6 +147,13 @@ public class CandidateService {
                 .linkedinUrl(candidateDTO.linkedinUrl())
                 .resumeUrl(candidateDTO.resumeUrl())
                 .notes(candidateDTO.notes())
+                .city(candidateDTO.city())
+                .availability(candidateDTO.availability())
+                .educationLevel(candidateDTO.educationLevel())
+                .isExperienced(candidateDTO.isExperienced())
+                .skills(candidateDTO.skills())
+                .avatarUrl(candidateDTO.avatarUrl())
+                .summary(candidateDTO.summary())
                 .build();
 
         // Save and return
@@ -194,11 +204,30 @@ public class CandidateService {
                 .linkedinUrl(candidateDTO.linkedinUrl())
                 .resumeUrl(candidateDTO.resumeUrl())
                 .notes(candidateDTO.notes())
+                .city(candidateDTO.city())
+                .availability(candidateDTO.availability())
+                .educationLevel(candidateDTO.educationLevel())
+                .isExperienced(candidateDTO.isExperienced())
+                .skills(candidateDTO.skills())
+                .avatarUrl(candidateDTO.avatarUrl())
+                .summary(candidateDTO.summary())
                 .build();
 
         // Save and return
         Candidate saved = candidateRepository.update(updated);
         logger.info("Candidate updated: {}", saved.getId());
+
+        // Log activity if notes were changed
+        if (candidateDTO.notes() != null &&
+                !candidateDTO.notes().equals(existing.getNotes())) {
+            activityService.logActivity(
+                    saved.getOrganizationId(),
+                    saved.getId(),
+                    "note_added",
+                    "Internal notes updated"
+            );
+            logger.debug("Activity logged for notes update");
+        }
 
         return CandidateDTO.fromEntity(saved);
     }

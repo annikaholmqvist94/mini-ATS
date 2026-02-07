@@ -121,6 +121,16 @@ public class SupabaseCandidateRepository extends BaseSupabaseRepository
         if (candidate.getResumeUrl() != null) data.put("resume_url", candidate.getResumeUrl());
         if (candidate.getNotes() != null) data.put("notes", candidate.getNotes());
 
+        // Extended fields
+        if (candidate.getCity() != null) data.put("city", candidate.getCity());
+        if (candidate.getAvailability() != null) data.put("availability", candidate.getAvailability());
+        if (candidate.getEducationLevel() != null) data.put("education_level", candidate.getEducationLevel());
+        if (candidate.getIsExperienced() != null) data.put("is_experienced", candidate.getIsExperienced());
+        // ✅ FIXED: Include skills even if empty array
+        if (candidate.getSkills() != null) data.put("skills", candidate.getSkills());
+        if (candidate.getAvatarUrl() != null) data.put("avatar_url", candidate.getAvatarUrl());
+        if (candidate.getSummary() != null) data.put("summary", candidate.getSummary());
+
         Map<String, Object> result = executePost(buildTableUrl(), data, Map.class);
         return mapToEntity(result);
     }
@@ -135,6 +145,16 @@ public class SupabaseCandidateRepository extends BaseSupabaseRepository
         if (candidate.getLinkedinUrl() != null) data.put("linkedin_url", candidate.getLinkedinUrl());
         if (candidate.getResumeUrl() != null) data.put("resume_url", candidate.getResumeUrl());
         if (candidate.getNotes() != null) data.put("notes", candidate.getNotes());
+
+        // Extended fields
+        if (candidate.getCity() != null) data.put("city", candidate.getCity());
+        if (candidate.getAvailability() != null) data.put("availability", candidate.getAvailability());
+        if (candidate.getEducationLevel() != null) data.put("education_level", candidate.getEducationLevel());
+        if (candidate.getIsExperienced() != null) data.put("is_experienced", candidate.getIsExperienced());
+        // ✅ CRITICAL FIX: Always include skills, even if empty array
+        if (candidate.getSkills() != null) data.put("skills", candidate.getSkills());
+        if (candidate.getAvatarUrl() != null) data.put("avatar_url", candidate.getAvatarUrl());
+        if (candidate.getSummary() != null) data.put("summary", candidate.getSummary());
 
         String url = buildTableUrl(eq("id", candidate.getId()));
         Map<String, Object> result = executePatch(url, data, Map.class);
@@ -185,6 +205,14 @@ public class SupabaseCandidateRepository extends BaseSupabaseRepository
                 .linkedinUrl((String) row.get("linkedin_url"))
                 .resumeUrl((String) row.get("resume_url"))
                 .notes((String) row.get("notes"))
+                // ✅ CRITICAL FIX: Map extended fields from database
+                .city((String) row.get("city"))
+                .availability((String) row.get("availability"))
+                .educationLevel((String) row.get("education_level"))
+                .isExperienced((Boolean) row.get("is_experienced"))
+                .skills(row.get("skills") != null ? (List<String>) row.get("skills") : List.of())
+                .summary((String) row.get("summary"))
+                .avatarUrl((String) row.get("avatar_url"))
                 .createdAt(parseInstant(row.get("created_at")))
                 .updatedAt(parseInstant(row.get("updated_at")))
                 .build();

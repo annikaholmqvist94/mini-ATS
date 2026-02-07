@@ -30,17 +30,20 @@ public class ApplicationService {
     private final JobRepository jobRepository;
     private final CandidateRepository candidateRepository;
     private final UserService userService;
+    private final ActivityService activityService;
 
     public ApplicationService(
             ApplicationRepository applicationRepository,
             JobRepository jobRepository,
             CandidateRepository candidateRepository,
-            UserService userService
+            UserService userService,
+            ActivityService activityService
     ) {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.candidateRepository = candidateRepository;
         this.userService = userService;
+        this.activityService = activityService;
     }
 
     /**
@@ -193,6 +196,15 @@ public class ApplicationService {
         Application saved = applicationRepository.save(application);
         logger.info("Application created with ID: {}", saved.getId());
 
+        // Log activity for new application
+        activityService.logActivity(
+                job.getOrganizationId(),
+                applicationDTO.candidateId(),
+                "candidate_added",
+                "Added to pipeline"
+        );
+        logger.debug("Activity logged for new application");
+
         return enrichApplicationDTO(saved);
     }
 
@@ -207,6 +219,7 @@ public class ApplicationService {
                 .orElseThrow(() -> new RuntimeException("Application not found with ID: " + id));
 
         ApplicationStatus status = ApplicationStatus.fromString(newStatus);
+        String oldStatus = existing.getStatus().name();
 
         // Validate transition (optional business rule)
         validateStatusTransition(existing.getStatus(), status);
@@ -220,6 +233,21 @@ public class ApplicationService {
         // Save and return
         Application saved = applicationRepository.update(updated);
         logger.info("Application status updated: {} -> {}", id, newStatus);
+
+        // Log activity for status change
+        if (!oldStatus.equals(newStatus)) {
+            // Fetch job to get organizationId
+            Job job = jobRepository.findById(existing.getJobId())
+                    .orElseThrow(() -> new RuntimeException("Job not found with ID: " + existing.getJobId()));
+
+            activityService.logActivity(
+                    job.getOrganizationId(),
+                    existing.getCandidateId(),
+                    "status_changed",
+                    "Moved from " + oldStatus + " to " + newStatus
+            );
+            logger.debug("Activity logged for status change: {} -> {}", oldStatus, newStatus);
+        }
 
         return enrichApplicationDTO(saved);
     }
