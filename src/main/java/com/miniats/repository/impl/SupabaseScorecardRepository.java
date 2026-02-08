@@ -59,7 +59,7 @@ public class SupabaseScorecardRepository extends BaseSupabaseRepository implemen
         if (scorecard.getExperienceLevel() != null) data.put("experience_level", scorecard.getExperienceLevel());
         if (scorecard.getProblemSolving() != null) data.put("problem_solving", scorecard.getProblemSolving());
         if (scorecard.getOverallScore() != null) data.put("overall_score", scorecard.getOverallScore());
-        if (scorecard.getEvaluatedBy() != null) data.put("evaluated_by", scorecard.getEvaluatedBy().toString());
+        //if (scorecard.getEvaluatedBy() != null) data.put("evaluated_by", scorecard.getEvaluatedBy().toString());
         if (scorecard.getNotes() != null) data.put("notes", scorecard.getNotes());
 
         String url = buildTableUrl(eq("candidate_id", scorecard.getCandidateId()));
@@ -99,7 +99,7 @@ public class SupabaseScorecardRepository extends BaseSupabaseRepository implemen
                 .culturalFit((Integer) row.get("cultural_fit"))
                 .experienceLevel((Integer) row.get("experience_level"))
                 .problemSolving((Integer) row.get("problem_solving"))
-                .evaluatedBy(row.get("evaluated_by") != null ? UUID.fromString((String) row.get("evaluated_by")) : null)
+                //.evaluatedBy(row.get("evaluated_by") != null ? UUID.fromString((String) row.get("evaluated_by")) : null)
                 .notes((String) row.get("notes"))
                 .createdAt(parseInstant(row.get("created_at")))
                 .updatedAt(parseInstant(row.get("updated_at")))

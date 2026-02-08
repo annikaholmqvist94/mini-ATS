@@ -70,12 +70,13 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Detta tillåter alla domäner att prata med din backend under utveckling
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8081", "http://localhost:5173"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8081", "http://localhost:5173", "http://localhost:*"));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -52,7 +52,7 @@ public class ScorecardService {
                     .culturalFit(scorecardDTO.culturalFit())
                     .experienceLevel(scorecardDTO.experienceLevel())
                     .problemSolving(scorecardDTO.problemSolving())
-                    .evaluatedBy(scorecardDTO.evaluatedBy())
+                    //.evaluatedBy(scorecardDTO.evaluatedBy())
                     .notes(scorecardDTO.notes())
                     .updatedAt(Instant.now())
                     .build();
@@ -76,7 +76,7 @@ public class ScorecardService {
                     .culturalFit(scorecardDTO.culturalFit())
                     .experienceLevel(scorecardDTO.experienceLevel())
                     .problemSolving(scorecardDTO.problemSolving())
-                    .evaluatedBy(scorecardDTO.evaluatedBy())
+                    //.evaluatedBy(scorecardDTO.evaluatedBy())
                     .notes(scorecardDTO.notes())
                     .createdAt(Instant.now())
                     .updatedAt(Instant.now())
