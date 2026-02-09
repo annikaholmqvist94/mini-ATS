@@ -43,7 +43,7 @@ public class SecurityConfig {
                 // Configure authorization
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (no authentication required)
-                        .requestMatchers("/health/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/health/**", "/auth/**", "/users/email/**").permitAll()
 
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
