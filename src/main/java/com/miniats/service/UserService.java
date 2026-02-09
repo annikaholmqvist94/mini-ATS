@@ -7,6 +7,8 @@ import com.miniats.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -22,13 +24,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final OrganizationService organizationService;
+    private final SupabaseAuthService supabaseAuthService;
 
     public UserService(
             UserRepository userRepository,
-            OrganizationService organizationService
+            OrganizationService organizationService,
+            SupabaseAuthService supabaseAuthService
     ) {
         this.userRepository = userRepository;
         this.organizationService = organizationService;
+        this.supabaseAuthService = supabaseAuthService;
     }
 
     /**
@@ -87,50 +92,90 @@ public class UserService {
     }
 
     /**
-     * Create new user
+     * Create new user (creates both in Supabase Auth AND public.users)
+     *
+     * @Transactional ensures rollback if anything fails
      */
+    @Transactional
     public UserDTO createUser(UserDTO userDTO) {
-        logger.info("Creating new user: {}", userDTO.email());
+        logger.info("Creating new user: {}", userDTO.getEmail());
 
-        // Validate email uniqueness
-        if (userRepository.existsByEmail(userDTO.email())) {
-            throw new RuntimeException("User with email '" + userDTO.email() + "' already exists");
+        // 1. Validate email uniqueness in public.users
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
+            logger.error("❌ User already exists: {}", userDTO.getEmail());
+            throw new RuntimeException("User with email '" + userDTO.getEmail() + "' already exists");
         }
 
-        // Validate organization exists
-        if (!organizationService.organizationExists(userDTO.organizationId())) {
-            throw new RuntimeException("Organization not found with ID: " + userDTO.organizationId());
+        // 2. Validate organization exists
+        if (!organizationService.organizationExists(userDTO.getOrganizationId())) {
+            logger.error("❌ Organization not found: {}", userDTO.getOrganizationId());
+            throw new RuntimeException("Organization not found with ID: " + userDTO.getOrganizationId());
         }
 
-        // Create entity
-        User user = User.builder()
-                .organizationId(userDTO.organizationId())
-                .email(userDTO.email())
-                .role(UserRole.fromString(userDTO.role()))
-                .fullName(userDTO.fullName())
-                .build();
+        // 3. Validate password is provided
+        if (userDTO.getPassword() == null || userDTO.getPassword().isBlank()) {
+            logger.error("❌ Password is required");
+            throw new RuntimeException("Password is required for new users");
+        }
 
-        // Save and return
-        User saved = userRepository.save(user);
-        logger.info("User created with ID: {}", saved.getId());
+        // 4. Create user in Supabase Auth FIRST
+        String authUserId;
+        try {
+            logger.info("🔵 Creating auth user for: {}", userDTO.getEmail());
+            authUserId = supabaseAuthService.createAuthUser(
+                    userDTO.getEmail(),
+                    userDTO.getPassword()
+            );
+            logger.info("✅ Auth user created with ID: {}", authUserId);
+        } catch (Exception e) {
+            logger.error("❌ Failed to create auth user: {}", e.getMessage());
+            throw new RuntimeException("Failed to create user in authentication system: " + e.getMessage(), e);
+        }
 
-        return UserDTO.fromEntity(saved);
+        // 5. Create user in public.users with SAME ID
+        try {
+            User user = User.builder()
+                    .id(UUID.fromString(authUserId))  // ← Use Auth User ID!
+                    .organizationId(userDTO.getOrganizationId())
+                    .email(userDTO.getEmail())
+                    .role(UserRole.fromString(userDTO.getRole()))
+                    .fullName(userDTO.getFullName())
+                    .build();
+
+            User saved = userRepository.save(user);
+            logger.info("✅ User created in database with ID: {}", saved.getId());
+
+            return UserDTO.fromEntity(saved);
+
+        } catch (Exception e) {
+            // If database insert fails, delete auth user to keep consistency
+            logger.error("❌ Failed to create user in database, rolling back auth user");
+            try {
+                supabaseAuthService.deleteAuthUser(authUserId);
+                logger.info("✅ Auth user deleted (rollback)");
+            } catch (Exception deleteError) {
+                logger.error("❌ Failed to delete auth user during rollback: {}", deleteError.getMessage());
+            }
+            throw new RuntimeException("Failed to create user in database: " + e.getMessage(), e);
+        }
     }
 
     /**
      * Create admin user (system-level operation)
+     * Uses same createUser flow, just sets ADMIN role
      */
-    public UserDTO createAdminUser(UUID organizationId, String email, String fullName) {
+    public UserDTO createAdminUser(UUID organizationId, String email, String fullName, String password) {
         logger.info("Creating admin user: {}", email);
 
-        UserDTO adminDTO = UserDTO.createRequest(
-                organizationId,
-                email,
-                UserRole.ADMIN.name(),
-                fullName
-        );
+        UserDTO adminDTO = UserDTO.builder()
+                .organizationId(organizationId)
+                .email(email)
+                .role(UserRole.ADMIN.name())
+                .fullName(fullName)
+                .password(password)  // ← VIKTIGT!
+                .build();
 
-        return createUser(adminDTO);
+        return createUser(adminDTO);  // ← Återanvänder main method!
     }
 
     /**
@@ -144,16 +189,16 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
 
         // Check email uniqueness if changing email
-        if (!existing.getEmail().equals(userDTO.email()) &&
-                userRepository.existsByEmail(userDTO.email())) {
-            throw new RuntimeException("User with email '" + userDTO.email() + "' already exists");
+        if (!existing.getEmail().equals(userDTO.getEmail()) &&
+                userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new RuntimeException("User with email '" + userDTO.getEmail() + "' already exists");
         }
 
         // Update entity (cannot change organization)
         User updated = existing.toBuilder()
-                .email(userDTO.email())
-                .role(UserRole.fromString(userDTO.role()))
-                .fullName(userDTO.fullName())
+                .email(userDTO.getEmail())
+                .role(UserRole.fromString(userDTO.getRole()))
+                .fullName(userDTO.getFullName())
                 .build();
 
         // Save and return

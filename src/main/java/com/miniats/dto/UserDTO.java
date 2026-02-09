@@ -1,76 +1,66 @@
 package com.miniats.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.miniats.domain.enums.UserRole;
 import com.miniats.domain.model.User;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Immutable DTO for User entity.
+ * DTO for User entity.
  * Used for API requests and responses.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public record UserDTO(
-        UUID id,
-        UUID organizationId,
-        String email,
-        String role,
-        String fullName,
-        Instant createdAt,
-        Instant updatedAt
-) {
+@Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDTO {
+    private UUID id;
+    private String email;
+    private String fullName;
+    private String role;
+    private UUID organizationId;
+    private String organizationName;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private String password;  // Only for creation, never returned
 
     /**
-     * Convert domain entity to DTO
+     * Convert entity to DTO (without password)
      */
     public static UserDTO fromEntity(User user) {
-        if (user == null) {
-            return null;
-        }
-        return new UserDTO(
-                user.getId(),
-                user.getOrganizationId(),
-                user.getEmail(),
-                user.getRole() != null ? user.getRole().name() : null,
-                user.getFullName(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
-    }
-
-    /**
-     * Convert DTO to domain entity
-     */
-    public User toEntity() {
-        return User.builder()
-                .id(this.id)
-                .organizationId(this.organizationId)
-                .email(this.email)
-                .role(this.role != null ? UserRole.fromString(this.role) : UserRole.USER)
-                .fullName(this.fullName)
-                .createdAt(this.createdAt)
-                .updatedAt(this.updatedAt)
+        return UserDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole().name())
+                .organizationId(user.getOrganizationId())
+                .organizationName(null)
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .password(null)  // Never return password
                 .build();
     }
 
     /**
-     * Create request DTO for new user
+     * Create request DTO (for creating users)
      */
     public static UserDTO createRequest(
             UUID organizationId,
             String email,
             String role,
-            String fullName
+            String fullName,
+            String password
     ) {
-        return new UserDTO(null, organizationId, email, role, fullName, null, null);
-    }
-
-    /**
-     * Check if user is admin
-     */
-    public boolean isAdmin() {
-        return UserRole.ADMIN.name().equals(this.role);
+        return UserDTO.builder()
+                .organizationId(organizationId)
+                .email(email)
+                .role(role)
+                .fullName(fullName)
+                .password(password)
+                .build();
     }
 }
-

@@ -89,7 +89,7 @@ public class UserController extends BaseController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<UserDTO>> createUser(@RequestBody UserDTO userDTO) {
-        logger.info("POST /api/users - Creating user: {}", userDTO.email());
+        logger.info("POST /api/users - Creating user: {}", userDTO.getEmail());
         UserDTO created = userService.createUser(userDTO);
         return created(created);
     }
@@ -106,7 +106,8 @@ public class UserController extends BaseController {
         UserDTO created = userService.createAdminUser(
                 request.organizationId,
                 request.email,
-                request.fullName
+                request.fullName,
+                request.password
         );
         return created(created);
     }
@@ -166,6 +167,7 @@ public class UserController extends BaseController {
     public record CreateAdminRequest(
             UUID organizationId,
             String email,
-            String fullName
+            String fullName,
+            String password
     ) {}
 }

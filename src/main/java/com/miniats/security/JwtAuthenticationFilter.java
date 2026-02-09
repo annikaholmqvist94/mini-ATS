@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Get user role from database
                 var userDTO = userService.getUserByEmail(email);
-                String role = userDTO.role();
+                String role = userDTO.getRole();
 
                 // Create authorities
                 List<SimpleGrantedAuthority> authorities = List.of(
