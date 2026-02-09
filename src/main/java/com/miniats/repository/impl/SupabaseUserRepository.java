@@ -11,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Supabase implementation of UserRepository.
@@ -18,6 +20,7 @@ import java.util.*;
 @Repository
 public class SupabaseUserRepository extends BaseSupabaseRepository
         implements UserRepository {
+    private static final Logger logger = LoggerFactory.getLogger(SupabaseUserRepository.class);
 
     public SupabaseUserRepository(
             RestTemplate restTemplate,
@@ -47,9 +50,12 @@ public class SupabaseUserRepository extends BaseSupabaseRepository
     public Optional<User> findByEmail(String email) {
         try {
             String url = buildTableUrl(eq("email", email));
+            logger.debug("Querying users with URL: {}", url);  // ← NY RAD
             List<Map<String, Object>> results = executeGet(url, new TypeReference<>() {});
+            logger.debug("Found {} results for email: {}", results.size(), email);  // ← NY RAD
             return results.isEmpty() ? Optional.empty() : Optional.of(mapToEntity(results.get(0)));
         } catch (Exception e) {
+            logger.error("Failed to find user by email: {}", email, e);  // ← NY RAD
             return Optional.empty();
         }
     }
