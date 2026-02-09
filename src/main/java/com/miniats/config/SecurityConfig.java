@@ -1,82 +1,78 @@
 package com.miniats.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.miniats.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
 import java.util.Arrays;
-import java.util.List;
 
 /**
- * Security configuration for Mini-ATS.
- * Currently configured for development with permissive access.
- *
- * DEVELOPMENT MODE: All endpoints are accessible without authentication.
- * TODO: Add JWT authentication and authorization for production.
+ * Security configuration with Supabase JWT authentication.
  */
 @Configuration
 @EnableWebSecurity
-@org.springframework.core.annotation.Order(1)
 public class SecurityConfig {
 
-    @Value("${cors.allowed-origins}")
-    private String allowedOrigins;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable()) // Inaktivera CSRF för API-testning
-//                .cors(org.springframework.security.config.Customizer.withDefaults())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/candidates/**", "/jobs/**", "/organizations/**", "/users/**", "/health/**", "/applications/**").permitAll() // Tillåt alla anrop till API:et
-//                        .anyRequest().authenticated()
-//                );
-//        return http.build();
-//    }
-@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-            // 1. Inaktivera standardinloggning och HTTP Basic helt
-            .formLogin(form -> form.disable())
-            .httpBasic(basic -> basic.disable())
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
-            // 2. Inaktivera CSRF (viktigt för API:er)
-            .csrf(csrf -> csrf.disable())
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                // Disable form login and HTTP basic
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable())
 
-            // 3. Aktivera CORS
-            .cors(org.springframework.security.config.Customizer.withDefaults())
+                // Disable CSRF (not needed for stateless API)
+                .csrf(csrf -> csrf.disable())
 
-            // 4. Tillåt ALLT under utveckling för att verifiera anslutningen
-            .authorizeHttpRequests(auth -> auth
-                    .anyRequest().permitAll()
-            )
+                // Enable CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // 5. Gör sessioner statslösa (bra för API:er)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                // Configure authorization
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints (no authentication required)
+                        .requestMatchers("/health/**", "/api/auth/**").permitAll()
 
-    return http.build();
-}
+                        // All other endpoints require authentication
+                        .anyRequest().authenticated()
+                )
+
+                // Stateless session management
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // Add JWT filter before UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Detta tillåter alla domäner att prata med din backend under utveckling
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:8081", "http://localhost:5173", "http://localhost:*"));
-
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:*",
+                "https://lovable.dev",
+                "https://*.lovableproject.com",
+                "http://localhost:8081"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

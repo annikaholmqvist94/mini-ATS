@@ -43,6 +43,9 @@ supabase:
   url: ${SUPABASE_URL}
   anon-key: ${SUPABASE_ANON_KEY}
   service-role-key: ${SUPABASE_SERVICE_ROLE_KEY}
+  jwt:
+    jwks-url: ${SUPABASE_JWT_JWKS_URL}
+    expiration: ${JWT_EXPIRATION:86400000}
 
 jwt:
   secret: ${JWT_SECRET}
