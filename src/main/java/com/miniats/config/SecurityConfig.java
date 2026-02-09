@@ -67,7 +67,9 @@ public class SecurityConfig {
                 "http://localhost:*",
                 "https://lovable.dev",
                 "https://*.lovableproject.com",
-                "http://localhost:8081"
+                "http://localhost:8081",
+                "https://talentflow-pro.vercel.app",
+                "https://*.vercel.app"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
